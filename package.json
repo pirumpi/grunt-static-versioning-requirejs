@@ -1,8 +1,8 @@
 {
   "name": "grunt-static-versioning-requirejs",
   "description": "Set version numbers to static content in a web application",
-  "version": "0.1.0",
-  "homepage": "https://github.com/cmartin/Grunt-static-versioning-requirejs",
+  "version": "0.1.1",
+  "homepage": "https://github.com/pirumpi/grunt-static-versioning-requirejs",
   "author": {
     "name": "Carlos Martin",
     "email": "pirumpi@gmail.com",
@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/cmartin/Grunt-static-versioning-requirejs.git"
+    "url": "git://github.com/pirumpi/grunt-static-versioning-requirejs.git"
   },
   "bugs": {
-    "url": "https://github.com/cmartin/Grunt-static-versioning-requirejs/issues"
+    "url": "https://github.com/pirumpi/grunt-static-versioning-requirejs/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/cmartin/Grunt-static-versioning-requirejs/blob/master/LICENSE-MIT"
+      "url": ""
     }
   ],
   "main": "Gruntfile.js",
@@ -41,5 +41,11 @@
   },
   "keywords": [
     "gruntplugin"
+  ],
+  "contributors":[
+      {
+          "name": "steven tate",
+          "email":"steven.w.tate@gmail.com"
+      }
   ]
 }
