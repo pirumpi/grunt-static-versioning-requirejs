@@ -1,7 +1,7 @@
 {
   "name": "grunt-static-versioning-requirejs",
-  "description": "Set version numbers to static content in a web application",
-  "version": "0.1.1",
+  "description": "Version your RequireJS enabled script",
+  "version": "0.1.2",
   "homepage": "https://github.com/pirumpi/grunt-static-versioning-requirejs",
   "author": {
     "name": "Carlos Martin",
