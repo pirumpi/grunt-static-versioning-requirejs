@@ -249,7 +249,7 @@ Written by [Carlos Martin](https://github.com/pirumpi) and [Steven Tate](https:/
 
 * 11/08/2013   0.1.0   Initial Release
 * 11/09/2013   0.1.1   Code cleanup
-* 11/09/2013   0.1.2 - 0.1.4   ReadMe changes
+* 11/09/2013   0.1.2 - 0.1.5   ReadMe changes
 
 #####Coming soon
 
