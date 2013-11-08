@@ -2,7 +2,7 @@
 
 GSVR is a [Grunt plugin](http://gruntjs.com/plugins) that allows you to version all your static content so that you can set far out content expiration on Javascript, CSS, HTML Templates and images and ensure that current builds of software are always serving the right versions.
 
-GSRV is meant to work with Tim Burke's awesome [RequireJS](http://requirejs.org/) library for scripts and optionally with [LESS](http://lesscss.org/) for stylesheets.
+GSRV is meant to work with [James Burke's](http://jrburke.com/) awesome [RequireJS](http://requirejs.org/) library for scripts and optionally with [LESS](http://lesscss.org/) for stylesheets.
 If you don't use a module loader with your Javascript - **YOU SHOULD!**
 
 Using a CommonJS or AMD architecture is almost a must in this day and for such script heavy web applications.  And, Require forces you into a non-blocking, modular architecuture which subsequently allows for out of the box script packaging and minification.
@@ -33,6 +33,7 @@ Once the plugins have been installed, enable them inside your Gruntfile with the
 
 ### Overview
 In your project's Gruntfile, add a section named `requirejs` to the data object passed into `grunt.initConfig()`.
+
 Refer to the [requirejs grunt plugin sample configuration](https://github.com/gruntjs/grunt-contrib-requirejs) for all the configuration options.
 
 The configuration below assumes that the require configuration file will be in /static/js and be named site.js.

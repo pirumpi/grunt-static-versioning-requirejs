@@ -1,7 +1,7 @@
 {
   "name": "grunt-static-versioning-requirejs",
   "description": "Version your RequireJS enabled script",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "homepage": "https://github.com/pirumpi/grunt-static-versioning-requirejs",
   "author": {
     "name": "Carlos Martin",
