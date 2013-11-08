@@ -242,14 +242,13 @@ RequireJS does support omitting http and https in the data-main attribute so hav
 
 
 ## Contributing
-Written by [Carlos Martin](github.com/pirumpi) and [Steven Tate](github.com/tateman66).
+Written by [Carlos Martin](https://github.com/pirumpi) and [Steven Tate](https://github.com/tateman66).
 
 ## Release History
 
 * 11/08/2013   0.1.0   Initial Release
 * 11/09/2013   0.1.1   Code cleanup
-* 11/09/2013   0.1.2   ReadMe cleanup/documentation
-* 11/09/2013   0.1.3   ReadMe changes
+* 11/09/2013   0.1.2 - 0.1.4   ReadMe changes
 
 #####Coming soon
 
