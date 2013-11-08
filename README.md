@@ -14,7 +14,7 @@ This plugin is meant to be used during the continuous integration process since 
 1. RequireJS Optimizer Integration to version just created production level Require AMD packages
 2. Optional Content Delivery Network integration to FTP your content to your favorite CDN
 3. Regex replacement within source code so that you can tweak your static paths to point to the new production content (locally or on CDN - ex: /js-build instead of /js or [CDNPATH]/js-build)
-4. Client side template support to server your Angular, Knockout, etc. templates from your CDN instead of your webserver (**requires CORS support from your CDN**)
+4. Client side template support to serve your Angular, Knockout, etc. templates from your CDN instead of your webserver (**requires CORS support from your CDN**)
 5. **Coming Soon** LESS/CSS/StyleSheet Images Support so that you can version all your CSS and your stylesheet images and have them sent to your desired location
 
 ## Getting Started
@@ -22,13 +22,13 @@ This plugin requires Grunt `~0.4.1`
 
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install these plugins with these commands:
 
-	shell npm install grunt-contrib-requirejs --save-dev
-	shell npm install grunt-static-versioning-requirejs --save-dev
+	npm install grunt-contrib-requirejs --save-dev
+	npm install grunt-static-versioning-requirejs --save-dev
 
 Once the plugins have been installed, enable them inside your Gruntfile with these line of JavaScript:
 
-	js grunt.loadNpmTasks('grunt-contrib-requirejs');
-	js grunt.loadNpmTasks('grunt-static-versioning-requirejs');
+	grunt.loadNpmTasks('grunt-contrib-requirejs');
+	grunt.loadNpmTasks('grunt-static-versioning-requirejs');
 
 
 ### Overview
@@ -114,16 +114,7 @@ Here's mine:
 
 Then, I put actual script src tags in my javascript for JQuery, Knockout and Angular.  - Suggestion: use conditional comments to fork JQuery and serve the 2+ version to all browsers other than IE8 and below.
 
-This is a Microsoft MVC website, so notice how I'm requiring the global bundle then letting the local pages add their own scripts only after global has loaded.  Then, in my views I end up adding script like this:
-
-	@section Scripts{
-		require(['app/account/account']);
-	}
-
-
-That can be abstracted to work for any language or server side MVC platform - Node/Express, Ruby/Rails, etc.  The benefit here is that we're using require everywhere to attach scripts and the only path in the entire application that needs to change to switch to production content is the data-main attribute of the require script!
-
-Something like this:
+This is a Microsoft MVC website, so notice how I'm requiring the global bundle then letting the local pages add their own scripts only after global has loaded.  
 
 		<script data-main="/js/site.js" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.8/require.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -138,6 +129,16 @@ Something like this:
 		</script>
 	</body>
 	</html>
+
+Then, in my views I end up adding script like this:
+
+	@section Scripts{
+		require(['app/account/account']);
+	}
+
+
+That can be abstracted to work for any language or server side MVC platform - Node/Express, Ruby/Rails, etc.  The benefit here is that we're using require everywhere to attach scripts and the only path in the entire application that needs to change to switch to production content is the data-main attribute of the require script!
+
 
 ##### Options
 
@@ -202,6 +203,8 @@ If CDN is omitted, it will just leave the versioned folders in the file system.
 
 #### replace
 
+See the example above.
+
 ##### replace.path
 
 This is a string which can be used in your regular expressions to edit paths.
@@ -217,6 +220,10 @@ This forces the files to be overwritten with the regex matches.  Leave true for 
 ##### replace.replacements
 
 This is an object array that takes a from (regex) and a to (function) and lets you operate on matches inside of the function.  Add more replacements here to inject new paths around your site.
+
+<%= v.path %> - this is the path specified in the options and can be used in your replacements.
+
+<%= v.folderName %> - this is the final folder name of the js folder which would be something like js-build-2013.2.1 if you passed in 2013.2.1 on the command line.
 
 ## Grunt Task
 
@@ -239,7 +246,7 @@ Ideally, you'd be calling grunt build from a continuous integration build and it
 
 The example above in the configuration section searches all files in a Views folder and subfolders looking for the data-main attribute on the requirejs script.  The regular expression and replacement injects the CDN path in front of the js file being requested in data-main attribute.  
 
-RequireJS does support omitting http and https in the data-main attribute so have it use the same protocol as the page being requested.
+RequireJS does support omitting http and https in the data-main attribute to have it use the same protocol as the page being requested.
 
 
 ## Contributing
@@ -249,7 +256,7 @@ Written by [Carlos Martin](https://github.com/pirumpi) and [Steven Tate](https:/
 
 * 11/08/2013   0.1.0   Initial Release
 * 11/09/2013   0.1.1   Code cleanup
-* 11/09/2013   0.1.2 - 0.1.5   ReadMe changes
+* 11/09/2013   0.1.2 - 0.1.6   ReadMe changes
 
 #####Coming soon
 
