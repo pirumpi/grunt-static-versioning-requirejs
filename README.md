@@ -229,7 +229,8 @@ If your output folder js-build and you call grunt build with the version switch 
 	grunt build --version-number=2013.1.2
 
 Then the resulting Javascript folder will be:
-```/js-build-2013.1.2```
+
+	/js-build-2013.1.2
 
 Ideally, you'd be calling grunt build from a continuous integration build and it would let you pass in a build version number to associate your static content with a specific build.
 
@@ -248,6 +249,7 @@ Written by [Carlos Martin](github.com/pirumpi) and [Steven Tate](github.com/tate
 * 11/08/2013   0.1.0   Initial Release
 * 11/09/2013   0.1.1   Code cleanup
 * 11/09/2013   0.1.2   ReadMe cleanup/documentation
+* 11/09/2013   0.1.3   ReadMe changes
 
 #####Coming soon
 
