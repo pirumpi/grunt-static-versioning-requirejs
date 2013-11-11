@@ -10,6 +10,7 @@
 var fs = require('fs'),
     FtpClient = require('ftp'),
     path = require('path'),
+    replace = require('replace'),
     FtpDeploy = require('ftp-deploy'),
     ftpDeploy = new FtpDeploy();
 
@@ -19,6 +20,7 @@ module.exports = function(grunt) {
   // creation: http://gruntjs.com/creating-tasks
 
   grunt.registerMultiTask('static_versioning', 'Set version numbers to static content in a web application', function() {
+      console.log(grunt.config.init());
       var options = this.data,
           done = this.async(),
           version = grunt.option('version-number') || promptUser(),
@@ -32,19 +34,14 @@ module.exports = function(grunt) {
               remoteRoot: options.cdn.target + '/' + path.basename('/' + options.src + '-' + version),
               parallelUploads: 15
           },
-          client = new FtpClient();
+          client = new FtpClient(),
+          compile = function(str){
+              str = str.replace('$VPATH', options.replace.path);
+              str = str.replace('$FOLDERNAME', path.basename(config.localRoot));
+              return str;
+          };
       
-      grunt.initConfig({
-          replace:{
-              jsbuild: options.replace
-          }
-      });
-      grunt.loadNpmTasks('grunt-text-replace');
       
-      grunt.config('v.path',options.replace.path);
-      grunt.config('v.folderName', path.basename(config.localRoot));
-      
- 
       //Check if target folder exist
       client.on('ready', function(){
           client.list(options.cdn.target, function(err, nlist){
@@ -106,9 +103,25 @@ module.exports = function(grunt) {
       
       grunt.event.on('uploadCompleted', function(){
           grunt.log.writeln('Folder uploaded');
-          grunt.task.run('replace');
+          grunt.task.run('version_replace');
           done(true);
           
+      });
+	  
+	  grunt.registerTask('version_replace', function(){
+          var replmnts = options.replace.replacements,
+              len = replmnts.length;
+          for(var i = 0; i < len; i++){
+              console.log('Template To', replmnts[i].to);
+              console.log('Template From', replmnts[i].from);
+              replace({
+                  regex: compile(replmnts[i].from),
+                  replacement: compile(replmnts[i].to),
+                  paths:options.replace.src,
+                  recursive:true,
+                  silent:false
+              });
+          }
       });
       
     ftpDeploy.on('uploading', function(relativeFilePath) {

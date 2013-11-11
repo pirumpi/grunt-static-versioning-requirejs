@@ -1,7 +1,7 @@
 {
   "name": "grunt-static-versioning-requirejs",
   "description": "Version your RequireJS enabled script",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "homepage": "https://github.com/pirumpi/grunt-static-versioning-requirejs",
   "author": {
     "name": "Carlos Martin",
@@ -30,11 +30,11 @@
   },
   "dependencies":{
       "ftp-deploy":"*",
-      "ftp":"~ 0.3.4"
+      "ftp":"~ 0.3.4",
+      "replace": "*"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-text-replace": "~0.3.2"
+    "grunt": "~0.4.1"
   },
   "peerDependencies": {
     "grunt": "~0.4.1"
