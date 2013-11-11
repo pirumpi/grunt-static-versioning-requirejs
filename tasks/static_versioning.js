@@ -20,7 +20,6 @@ module.exports = function(grunt) {
   // creation: http://gruntjs.com/creating-tasks
 
   grunt.registerMultiTask('static_versioning', 'Set version numbers to static content in a web application', function() {
-      console.log(grunt.config.init());
       var options = this.data,
           done = this.async(),
           version = grunt.option('version-number') || promptUser(),
@@ -112,8 +111,6 @@ module.exports = function(grunt) {
           var replmnts = options.replace.replacements,
               len = replmnts.length;
           for(var i = 0; i < len; i++){
-              console.log('Template To', replmnts[i].to);
-              console.log('Template From', replmnts[i].from);
               replace({
                   regex: compile(replmnts[i].from),
                   replacement: compile(replmnts[i].to),
