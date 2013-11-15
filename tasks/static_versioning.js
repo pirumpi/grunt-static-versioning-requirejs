@@ -61,7 +61,7 @@ module.exports = function(grunt) {
       //Creating missing folder
       grunt.event.on('createFolder', function(){
 	  console.log('FolderName', config.remoteRoot);
-          client.mkdir(rootFolder, function(err){
+          client.mkdir(config.remoteRoot, function(err){
               if(err){ 
                   error('Cannot create folder', grunt, done);
               }else{ 
