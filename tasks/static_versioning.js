@@ -23,14 +23,14 @@ module.exports = function(grunt) {
       var options = this.data,
           done = this.async(),
           version = grunt.option('version-number') || promptUser(),
-          rmfolder = options.removeAfterUpload || true,
+          rmfolder = options.removeAfterUpload || false,
           config= {
               username: options.cdn.username,
               password: options.cdn.pass,
               host: options.cdn.host,
               port: options.cdn.port,
               localRoot: options.src + '-' + version,
-              remoteRoot: options.cdn.target + '/' + path.basename('/' + options.src + '-' + version),
+              remoteRoot: options.cdn.target + path.basename('/' + options.src + '-' + version),
               parallelUploads: 15
           },
           client = new FtpClient(),
@@ -43,10 +43,11 @@ module.exports = function(grunt) {
       
       //Check if target folder exist
       client.on('ready', function(){
-          client.list(options.cdn.target, function(err, nlist){
+          client.list(config.remoteRoot, function(err, nlist){
               if(err){
                   error('Unknown ftp error', grunt, done);
               }else{
+			  console.log('List',nlist);
                   if(nlist.length > 0){
                       grunt.event.emit('targetExists');
                       client.end();
@@ -59,7 +60,8 @@ module.exports = function(grunt) {
       
       //Creating missing folder
       grunt.event.on('createFolder', function(){
-          client.mkdir(options.cdn.target, function(err){
+	  console.log('FolderName', config.remoteRoot);
+          client.mkdir(rootFolder, function(err){
               if(err){ 
                   error('Cannot create folder', grunt, done);
               }else{ 
@@ -88,6 +90,7 @@ module.exports = function(grunt) {
       
       grunt.event.on('nameChanged', function(){
           ftpDeploy.deploy(config, function(err){
+		  console.log(err);
             if(err){
                 grunt.log.writeln('Failed to upload new folder to the server');
                 done(false);
