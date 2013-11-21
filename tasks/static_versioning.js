@@ -8,7 +8,7 @@
 
 'use strict';
 var fs = require('fs'),
-    FtpClient = require('ftp'),
+    util = require('util'),
     path = require('path'),
     replace = require('replace'),
     FtpDeploy = require('ftp-deploy'),
@@ -33,51 +33,12 @@ module.exports = function(grunt) {
               remoteRoot: options.cdn.target + path.basename('/' + options.src + '-' + version),
               parallelUploads: 15
           },
-          client = new FtpClient(),
           compile = function(str){
               str = str.replace('$VPATH', options.replace.path);
               str = str.replace('$FOLDERNAME', path.basename(config.localRoot));
               return str;
           };
       
-      
-      //Check if target folder exist
-      client.on('ready', function(){
-          client.list(config.remoteRoot, function(err, nlist){
-              if(err){
-                  error('Unknown ftp error', grunt, done);
-              }else{
-			  console.log('List',nlist);
-                  if(nlist.length > 0){
-                      grunt.event.emit('targetExists');
-                      client.end();
-                  }else{
-                      grunt.event.emit('createFolder');
-                  }
-              }
-          });
-      });
-      
-      //Creating missing folder
-      grunt.event.on('createFolder', function(){
-	  console.log('FolderName', config.remoteRoot);
-          client.mkdir(config.remoteRoot, function(err){
-              if(err){ 
-                  error('Cannot create folder', grunt, done);
-              }else{ 
-                  grunt.event.emit('targetExists');
-                  client.end();
-              }
-          });
-      });
-      
-      client.on('error', function(){
-          error('FTP Failed', grunt, done);
-      });
-      
-      client.connect({host:config.host, user: config.username, password: config.password, port:config.port});
-      
-      grunt.event.on('targetExists', function(){      
           fs.rename(options.src, options.src + '-' + version, function(err){
               if(err){
                   error('Failed to change folder name', grunt, done);
@@ -86,7 +47,6 @@ module.exports = function(grunt) {
                   grunt.event.emit('nameChanged');
               }
           });
-      });
       
       grunt.event.on('nameChanged', function(){
           ftpDeploy.deploy(config, function(err){
