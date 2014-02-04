@@ -18,25 +18,22 @@ module.exports = function(grunt) {
        src:'static/js-build',
        removeAfterUpload:false,
        cdn:{
-           target:'',
+           target:'/',
            type:'ftp',
-           host: 'dev-rev-srv.dev.activenetwork.com',
-           username:'akamaiftp',
+           host: 'localhost',
+           username:'username',
            pass: 'Password1',
            port: 21
        },
        replace:{
            path:'http://dev-rev-src.dev.activenetwork.com:90',
            src: [
-                'Views/*.*',
-                'Views/**/*.*'
+                'Views/',
+                'Content/js/site.js'
             ],
-           overwrite:true,
            replacements:[{
-               from: /\<script data-main=\"\/js/gi,
-               to: function (match) {
-					return match.replace('data-main=\"/js', 'data-main=\"<%= v.path %>/<%= v.folderName %>');
-				}
+               from: '/js',
+               to: '/$FOLDERNAME'
            }]
        }
       }

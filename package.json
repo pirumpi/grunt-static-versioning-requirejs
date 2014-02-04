@@ -1,7 +1,7 @@
 {
   "name": "grunt-static-versioning-requirejs",
   "description": "Version your RequireJS enabled script",
-  "version": "0.2.3",
+  "version": "0.3.2",
   "homepage": "https://github.com/pirumpi/grunt-static-versioning-requirejs",
   "author": {
     "name": "Carlos Martin",
@@ -29,8 +29,11 @@
     "test": "grunt test"
   },
   "dependencies":{
-      "ftp-deploy":"*",
-      "replace": "*"
+      "replace": "*",
+      "jsftp": "0.5.x",
+      "async": "0.2.x",
+      "minimatch": "0.2.12",
+      "sftp-upload":"*"
   },
   "devDependencies": {
     "grunt": "~0.4.1"

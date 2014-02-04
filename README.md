@@ -1,4 +1,4 @@
-﻿# [Grunt-Static-Versioning-Requirejs](https://npmjs.org/package/grunt-static-versioning-requirejs)
+# [Grunt-Static-Versioning-Requirejs](https://npmjs.org/package/grunt-static-versioning-requirejs)
 
 GSVR is a [Grunt plugin](http://gruntjs.com/plugins) that allows you to version all your static content so that you can set far out content expiration on Javascript, CSS, HTML Templates and images and ensure that current builds of software are always serving the right versions.
 
@@ -148,33 +148,30 @@ For a complete write up of RequireJS [study the site in it's entirety](http://re
 In your project's Gruntfile, add a section named `static_versioning` to the data object passed into `grunt.initConfig()`.
 
 	static_versioning: {
-		jsversioning: {
-			src: 'static/js-build',
-			removeAfterUpload: false,
-			cdn: {
-				target: '',
-				type: 'ftp',
-				host: 'mycdn.com',
-				username: 'someusername',
-				pass: 'somepassword',
-				port: 21
-			},
-			replace: {
-				path: '//mycdn.com',
-				src: [
-						'Views/*.*',
-						'Views/**/*.*'
-				],
-				overwrite: true,
-				replacements: [{
-					from: /\<script data-main=\"\/js/gi,
-					to: function (match) {
-						return match.replace('data-main=\"/js', 'data-main=\"<%= v.path %>/<%= v.folderName %>');
-					}
-				}]
-			}
-		}
-	}
+      jsversioning: {
+       src:'static/js-build',
+       removeAfterUpload:false,
+       cdn:{
+           target:'/',
+           type:'ftp',
+           host: 'localhost',
+           username:'username',
+           pass: 'Password1',
+           port: 21
+       },
+       replace:{
+           path:'http://dev-rev-src.dev.activenetwork.com:90',
+           src: [
+                'Views/',
+                'Content/js/site.js'
+            ],
+           replacements:[{
+               from: '/js',
+               to: '/$FOLDERNAME'
+           }]
+       }
+      }
+    
 
 ### Options
 
