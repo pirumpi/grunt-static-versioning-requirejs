@@ -190,10 +190,10 @@ Object with the following properties:
 	{
 		target: '',		// Directory to create or look for on the FTP server under which all content will go
 		type: 'ftp',	// Only ftp supported at the moment
-		host: '',		// FTP endpoint
-		username: ,''	// user name for ftp
-		pass: '',		// password for ftp
-		port: '', 		// port for ftp - sftp not yet supported
+		host: '',		// FTP or SFTP endpoint
+		username: ,''	// user name for ftp/sftp
+		pass: '',		// password for ftp/sftp
+		port: '', 		// port for ftp/sftp
 	}
 
 If CDN is omitted, it will just leave the versioned folders in the file system.
@@ -255,6 +255,7 @@ Written by [Carlos Martin](https://github.com/pirumpi) and [Steven Tate](https:/
 * 11/09/2013   0.1.1   Code cleanup
 * 11/09/2013   0.1.2 - 0.1.6   ReadMe changes
 * 02/02/2014     0.3.3      Adding SFTP support
+* 02/05/2014     0.3.4      Fixing SFTP issues
 
 #####Coming soon
 

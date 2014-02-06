@@ -2,7 +2,7 @@
  * grunt-static-versioning
  * https://github.com/cmartin/Grunt-static-versioning
  *
- * Copyright (c) 2013 Carlos Martin
+ * Copyright (c) 2014 Carlos Martin
  * Licensed under the MIT license.
  */
 
@@ -12,35 +12,45 @@ var fs = require('fs'),
     path = require('path'),
     replace = require('replace'),
     FtpDeploy = require('./lib/ftp-deploy'),
-    sftp = require('sftp-upload'),
+    Sftp = require('sftp-upload'),
     ftpDeploy = new FtpDeploy();
 
 module.exports = function(grunt) {
     
-    // Please see the Grunt documentation for more information regarding task
-    // creation: http://gruntjs.com/creating-tasks
-    
     grunt.registerMultiTask('static_versioning', 'Set version numbers to static content in a web application', function() {
+        
         var options = this.data,
             done = this.async(),
             version = grunt.option('version-number') || promptUser(),
-            rmfolder = options.removeAfterUpload || false;
-        
-        var config= {
-            username: options.cdn.username,
-            password: options.cdn.pass,
-            host: options.cdn.host,
-            port: options.cdn.port,
-            transfer: options.cdn.type,
-            localRoot: options.src + '-' + version,
-            remoteRoot: options.cdn.target + path.basename('/' + options.src + '-' + version),
-            parallelUploads: 15
-        };
+            rmfolder = options.removeAfterUpload || false,
+            uploadFiles = options.cdn.upload || true,
+            replaceFirst = options.replaceBeforeUpload || false,
+            config= {
+                username: options.cdn.username,
+                password: options.cdn.pass,
+                host: options.cdn.host,
+                port: options.cdn.port,
+                transfer: options.cdn.type,
+                privateKey: options.cdn.privateKey,
+                localRoot: options.src + '-' + version,
+                remoteRoot: options.cdn.target + path.basename('/' + options.src + '-' + version),
+                parallelUploads: 15
+            };
         
         //Replacing variable
-        var compile = function(str){
-            str = str.replace('$VPATH', options.replace.path);
-            str = str.replace('$FOLDERNAME', path.basename(config.localRoot));
+        var compile = function (str) {
+            if (Array.isArray(str)) {
+                str.forEach(function (st) {
+                    var indx = str.indexOf(st);
+                    str[indx] =  st.replace('$VPATH', options.replace.path)
+                    .replace('$FOLDERNAME', path.basename(config.localRoot))
+                    .replace('$VERSION', version);
+                });
+            } else {
+                str = str.replace('$VPATH', options.replace.path)
+                .replace('$FOLDERNAME', path.basename(config.localRoot))
+                .replace('$VERSION', version);
+            }
             return str;
         };
         
@@ -50,8 +60,8 @@ module.exports = function(grunt) {
                 error('Failed to change folder name', grunt, done);
             }else{
                 grunt.log.writeln('Folder name changed to ' + options.src + '-' + version);
-                if(options.cdn.upload){
-                    grunt.event.emit('nameChanged');
+                if(options.cdn && uploadFiles){
+                    grunt.event.emit('nameChanged', config, options);
                 }else{
                     grunt.event.emit('uploadCompleted');
                 }
@@ -59,14 +69,19 @@ module.exports = function(grunt) {
         });
         
         //Transfering data to cdn
-        grunt.event.on('nameChanged', function(){
-            transfer(config.transfer);
+        grunt.event.once('nameChanged', function(config, options){
+            if(replaceFirst){
+                grunt.task.run('version_replace');
+            }
+            transfer(config, options);
         });
         
         //Replacing content in local server
-        grunt.event.on('uploadCompleted', function(){
+        grunt.event.once('uploadCompleted', function(){
             grunt.log.writeln('Folder uploaded');
-            grunt.task.run('version_replace');
+            if(!replaceFirst){
+                grunt.task.run('version_replace');
+            }
             done(true);
             
         });
@@ -80,7 +95,7 @@ module.exports = function(grunt) {
                     replace({
                         regex: compile(replmnts[i].from),
                         replacement: compile(replmnts[i].to),
-                        paths:options.replace.src,
+                        paths:compile(options.replace.src),
                         recursive:options.replace.recursive || true,
                         exclude: options.replace.exclude || '',
                         silent:false
@@ -90,57 +105,58 @@ module.exports = function(grunt) {
         });
         
         //Supporting two type of data transfer FTP & SFTP
-        var transfer = function(type){
-            switch(type){
-                case 'ftp':
-                    ftpDeploy.deploy(config, function(err){
-                        console.log(err);
-                        if(err){
-                            grunt.log.writeln('Failed to upload new folder to the server');
-                            done(false);
-                        }else{
-                            if(rmfolder){
-                                deleteFolderRecursive(config.localRoot);
-                            }
-                            grunt.event.emit('uploadCompleted');
-                        }
-                    });
-                    //Event handler for FTP transfer
-                    ftpDeploy.on('uploading', function(relativeFilePath) {
-                        console.log('uploading ' + relativeFilePath);
-                    });
-                    
-                    ftpDeploy.on('uploaded', function(relativeFilePath) {
-                        var percentTransferred = Math.round((ftpDeploy.transferred/ftpDeploy.total) * 100);
-                        console.log(percentTransferred + '% uploaded   ' + path.basename(relativeFilePath));
-                    });
-                    break;
-                case 'sftp':
-                    sftp.config({
-                        host: config.host,
-                        username: config.username,
-                        path: config.localRoot,
-                        remoteDir: config.remoteRoot,
-                        privateKey: fs.readFileSync(config.privateKey)
-                    })
-                    .on('error', function(err){
-                        console.log(err);
-                         grunt.log.writeln('Failed to upload new folder to the server');
-                         done(false);
-                    })
-                    .on('uploading', function(progress){
-                        console.log(progress.percent+' % uploaded');
-                    })
-                    .on('completed', function(){
+        var transfer = function (config, options) {
+            if(config.transfer === 'ftp'){
+                console.log('Starting upload for ' + config.localRoot);
+                ftpDeploy.deploy(config, function(err){
+                    console.log(err);
+                    if(err){
+                        grunt.log.writeln('Failed to upload new folder to the server');
+                        done(false);
+                    }else{
                         if(rmfolder){
                             deleteFolderRecursive(config.localRoot);
                         }
                         grunt.event.emit('uploadCompleted');
-                    })
-                    .upload();
-                    break;
+                    }
+                });
+                //Event handler for FTP transfer
+                ftpDeploy.on('uploading', function(relativeFilePath) {
+                    console.log('uploading ' + relativeFilePath);
+                });
+                
+                ftpDeploy.on('uploaded', function(relativeFilePath) {
+                    var percentTransferred = Math.round((ftpDeploy.transferred/ftpDeploy.total) * 100);
+                    console.log(percentTransferred + '% uploaded   ' + path.basename(relativeFilePath));
+                });
+            }else if(config.transfer === 'sftp'){
+                console.log('Starting upload for ' + config.localRoot);
+                var opt = {
+                    host: config.host,
+                    username: config.username,
+                    path: config.localRoot,
+                    remoteDir: config.remoteRoot,
+                    privateKey: fs.readFileSync(config.privateKey)
+                };
+                console.log('Options2',opt);
+                var sftp = new Sftp(opt);
+                sftp.on('error', function(err){
+                    console.log(err);
+                    error('Failed to upload new folder to the server', grunt, done);
+                })
+                .on('uploading', function(progress){
+                    console.log(progress.percent+' % uploaded');
+                })
+                .on('completed', function(){
+                    if(rmfolder){
+                        deleteFolderRecursive(config.localRoot);
+                    }
+                    grunt.event.emit('uploadCompleted');
+                })
+                .upload();
             }
         };
+        
     });
 };
 
