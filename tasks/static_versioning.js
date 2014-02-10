@@ -23,17 +23,17 @@ module.exports = function(grunt) {
             done = this.async(),
             version = grunt.option('version-number') || promptUser(),
             rmfolder = options.removeAfterUpload || false,
-            uploadFiles = options.cdn.upload || true,
+            uploadFiles = options.cdn ? (options.cdn.upload || true) : false,
             replaceFirst = options.replaceBeforeUpload || false,
             config= {
-                username: options.cdn.username,
-                password: options.cdn.pass,
-                host: options.cdn.host,
-                port: options.cdn.port,
-                transfer: options.cdn.type,
-                privateKey: options.cdn.privateKey,
+                username: options.cdn ? options.cdn.username : '',
+                password: options.cdn ? options.cdn.pass : '',
+                host: options.cdn ? options.cdn.host : '',
+                port: options.cdn ? options.cdn.port : '',
+                transfer: options.cdn ? options.cdn.type : '',
+                privateKey: options.cdn ? options.cdn.privateKey : '',
                 localRoot: options.src + '-' + version,
-                remoteRoot: options.cdn.target + path.basename('/' + options.src + '-' + version),
+                remoteRoot: options.cdn ? options.cdn.target + path.basename('/' + options.src + '-' + version) : '',
                 parallelUploads: 15
             };
         
@@ -138,7 +138,6 @@ module.exports = function(grunt) {
                     remoteDir: config.remoteRoot,
                     privateKey: fs.readFileSync(config.privateKey)
                 };
-                console.log('Options2',opt);
                 var sftp = new Sftp(opt);
                 sftp.on('error', function(err){
                     console.log(err);
