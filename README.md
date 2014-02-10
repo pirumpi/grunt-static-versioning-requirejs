@@ -256,6 +256,7 @@ Written by [Carlos Martin](https://github.com/pirumpi) and [Steven Tate](https:/
 * 11/09/2013   0.1.2 - 0.1.6   ReadMe changes
 * 02/02/2014     0.3.3      Adding SFTP support
 * 02/05/2014     0.3.4      Fixing SFTP issues
+* 02/10/2014     0.3.6      Code cleanup
 
 #####Coming soon
 
