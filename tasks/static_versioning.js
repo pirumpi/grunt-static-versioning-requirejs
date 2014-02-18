@@ -23,7 +23,6 @@ module.exports = function(grunt) {
             done = this.async(),
             version = grunt.option('version-number') || promptUser(),
             rmfolder = options.removeAfterUpload || false,
-            uploadFiles = options.cdn ? !!options.cdn.upload : true,
             replaceFirst = options.replaceBeforeUpload || false,
             config= {
                 username: options.cdn ? options.cdn.username : '',
@@ -60,7 +59,7 @@ module.exports = function(grunt) {
                 error('Failed to change folder name', grunt, done);
             }else{
                 grunt.log.writeln('Folder name changed to ' + options.src + '-' + version);
-                if(options.cdn && uploadFiles){
+                if(options.cdn){
                     grunt.event.emit('nameChanged', config, options);
                 }else{
                     grunt.event.emit('uploadCompleted');
