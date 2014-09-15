@@ -23,6 +23,7 @@ module.exports = function(grunt) {
             done = this.async(),
             version = grunt.option('version-number') || promptUser(),
             rmfolder = options.removeAfterUpload || false,
+            rename = options.renameFolder || true,
             replaceFirst = options.replaceBeforeUpload || false,
             config= {
                 username: options.cdn ? options.cdn.username : '',
@@ -52,20 +53,29 @@ module.exports = function(grunt) {
             }
             return str;
         };
-        
-        //Renaming directory with the new version numnber
-        fs.rename(options.src, options.src + '-' + version, function(err){
-            if(err){
-                error('Failed to change folder name', grunt, done);
-            }else{
-                grunt.log.writeln('Folder name changed to ' + options.src + '-' + version);
-                if(options.cdn){
-                    grunt.event.emit('nameChanged', config, options);
+
+        if(rename){
+            //Renaming directory with the new version numnber
+            fs.rename(options.src, options.src + '-' + version, function(err){
+                if(err){
+                    error('Failed to change folder name', grunt, done);
                 }else{
-                    grunt.event.emit('uploadCompleted');
+                    grunt.log.writeln('Folder name changed to ' + options.src + '-' + version);
+                    if(options.cdn){
+                        grunt.event.emit('nameChanged', config, options);
+                    }else{
+                        grunt.event.emit('uploadCompleted');
+                    }
                 }
+            });
+        }else{
+            if(options.cdn){
+                grunt.event.emit('nameChanged', config, options);
+            }else{
+                grunt.event.emit('uploadCompleted');
             }
-        });
+        }
+
         
         //Transfering data to cdn
         grunt.event.once('nameChanged', function(config, options){
