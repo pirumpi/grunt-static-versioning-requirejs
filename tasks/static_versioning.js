@@ -15,130 +15,66 @@ var fs = require('fs'),
     Sftp = require('sftp-upload'),
     ftpDeploy = new FtpDeploy();
 
-module.exports = function(grunt) {
-    
-    grunt.registerMultiTask('static_versioning', 'Set version numbers to static content in a web application', function() {
-        
+module.exports = function (grunt) {
+
+    grunt.registerMultiTask('static_versioning', 'Set version numbers to static content in a web application', function () {
+
         var options = this.data,
             done = this.async(),
             version = grunt.option('version-number') || promptUser(),
             rmfolder = options.removeAfterUpload || false,
             replaceFirst = options.replaceBeforeUpload || false,
-            rename = typeof options.renameFolder === 'undefined' ? true : options.renameFolder,
-            config= {
+            config = {
                 username: options.cdn ? options.cdn.username : '',
                 password: options.cdn ? options.cdn.pass : '',
                 host: options.cdn ? options.cdn.host : '',
                 port: options.cdn ? options.cdn.port : '',
                 transfer: options.cdn ? options.cdn.type : '',
                 privateKey: options.cdn ? options.cdn.privateKey : '',
-                localRoot: options.src + '-' + version,
-                remoteRoot: options.cdn ? options.cdn.target + path.basename('/' + options.src + '-' + version) : '',
+                localRoot: (options.renameFolder) ? options.src + '-' + version : options.src,
+                remoteRoot: (options.cdn) ? (options.renameFolder) ? options.cdn.target + path.basename('/' + options.src + '-' + version) : options.cdn.target : '',
                 parallelUploads: 15
             };
-        
+
         //Replacing variable
         var compile = function (str) {
             if (Array.isArray(str)) {
                 str.forEach(function (st) {
                     var indx = str.indexOf(st);
-                    str[indx] =  st.replace('$VPATH', options.replace.path)
-                    .replace('$FOLDERNAME', path.basename(config.localRoot))
-                    .replace('$VERSION', version);
+                    str[indx] = st.replace('$VPATH', options.replace.path).replace('$FOLDERNAME', path.basename(config.localRoot)).replace('$VERSION', version);
                 });
             } else {
-                str = str.replace('$VPATH', options.replace.path)
-                .replace('$FOLDERNAME', path.basename(config.localRoot))
-                .replace('$VERSION', version);
+                str = str.replace('$VPATH', options.replace.path).replace('$FOLDERNAME', path.basename(config.localRoot)).replace('$VERSION', version);
             }
             return str;
         };
 
-        if(rename){
-            //Renaming directory with the new version numnber
-            fs.rename(options.src, options.src + '-' + version, function(err){
-                if(err){
-                    error('Failed to change folder name', grunt, done);
-                }else{
-                    grunt.log.writeln('Folder name changed to ' + options.src + '-' + version);
-                    if(options.cdn){
-                        grunt.event.emit('nameChanged', config, options);
-                    }else{
-                        grunt.event.emit('uploadCompleted');
-                    }
-                }
-            });
-        }else{
-            if(options.cdn){
-                grunt.event.emit('nameChanged', config, options);
-            }else{
-                grunt.event.emit('uploadCompleted');
-            }
-        }
-
-        
-        //Transfering data to cdn
-        grunt.event.once('nameChanged', function(config, options){
-            if(replaceFirst){
-                grunt.task.run('version_replace');
-            }
-            transfer(config, options);
-        });
-        
-        //Replacing content in local server
-        grunt.event.once('uploadCompleted', function(){
-            grunt.log.writeln('Folder uploaded');
-            if(!replaceFirst){
-                grunt.task.run('version_replace');
-            }
-            done(true);
-            
-        });
-        
-        //Internal grunt task to replace strings in the local filesystem
-        grunt.registerTask('version_replace', function(){
-            if(options.replace){
-                var replmnts = options.replace.replacements,
-                    len = replmnts.length;
-                for(var i = 0; i < len; i++){
-                    replace({
-                        regex: compile(replmnts[i].from),
-                        replacement: compile(replmnts[i].to),
-                        paths:compile(options.replace.src),
-                        recursive:options.replace.recursive || true,
-                        exclude: options.replace.exclude || '',
-                        silent:false
-                    });
-                }
-            }
-        });
-        
         //Supporting two type of data transfer FTP & SFTP
-        var transfer = function (config, options) {
-            if(config.transfer === 'ftp'){
+        var transfer = function (config) {
+            if (config.transfer === 'ftp') {
                 console.log('Starting upload for ' + config.localRoot);
-                ftpDeploy.deploy(config, function(err){
+                ftpDeploy.deploy(config, function (err) {
                     console.log(err);
-                    if(err){
+                    if (err) {
                         grunt.log.writeln('Failed to upload new folder to the server');
                         done(false);
-                    }else{
-                        if(rmfolder){
+                    } else {
+                        if (rmfolder) {
                             deleteFolderRecursive(config.localRoot);
                         }
                         grunt.event.emit('uploadCompleted');
                     }
                 });
                 //Event handler for FTP transfer
-                ftpDeploy.on('uploading', function(relativeFilePath) {
+                ftpDeploy.on('uploading', function (relativeFilePath) {
                     console.log('uploading ' + relativeFilePath);
                 });
-                
-                ftpDeploy.on('uploaded', function(relativeFilePath) {
-                    var percentTransferred = Math.round((ftpDeploy.transferred/ftpDeploy.total) * 100);
+
+                ftpDeploy.on('uploaded', function (relativeFilePath) {
+                    var percentTransferred = Math.round((ftpDeploy.transferred / ftpDeploy.total) * 100);
                     console.log(percentTransferred + '% uploaded   ' + path.basename(relativeFilePath));
                 });
-            }else if(config.transfer === 'sftp'){
+            } else if (config.transfer === 'sftp') {
                 console.log('Starting upload for ' + config.localRoot);
                 var opt = {
                     host: config.host,
@@ -148,48 +84,108 @@ module.exports = function(grunt) {
                     privateKey: fs.readFileSync(config.privateKey)
                 };
                 var sftp = new Sftp(opt);
-                sftp.on('error', function(err){
+                sftp.on('error', function (err) {
                     console.log(err);
                     error('Failed to upload new folder to the server', grunt, done);
                 })
-                .on('uploading', function(progress){
-                    console.log(progress.percent+' % uploaded');
-                })
-                .on('completed', function(){
-                    if(rmfolder){
-                        deleteFolderRecursive(config.localRoot);
-                    }
-                    grunt.event.emit('uploadCompleted');
-                })
-                .upload();
+                    .on('uploading', function (progress) {
+                        console.log(progress.percent + ' % uploaded');
+                    })
+                    .on('completed', function () {
+                        if (rmfolder) {
+                            deleteFolderRecursive(config.localRoot);
+                        }
+                        grunt.event.emit('uploadCompleted');
+                    })
+                    .upload();
             }
         };
-        
-    });
-};
-
-//Utils
-
-function promptUser(){
-    return Math.round(Math.random() * 10000);
-}
-
-function error(str, grunt, done){
-    grunt.log.writeln(str);
-    done(false);
-}
 
 
-function deleteFolderRecursive (path){
-    if( fs.existsSync(path) ) {
-        fs.readdirSync(path).forEach(function(file,index){
-            var curPath = path + "/" + file;
-            if(fs.statSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath);
+        function promptUser() {
+            return Math.round(Math.random() * 10000);
+        }
+
+        function error(str, grunt, done) {
+            grunt.log.writeln(str);
+            done(false);
+        }
+
+
+        function deleteFolderRecursive(path) {
+            if (fs.existsSync(path)) {
+                fs.readdirSync(path).forEach(function (file, index) {
+                    var curPath = path + "/" + file;
+                    if (fs.statSync(curPath).isDirectory()) { // recurse
+                        deleteFolderRecursive(curPath);
+                    } else { // delete file
+                        fs.unlinkSync(curPath);
+                    }
+                });
+                fs.rmdirSync(path);
+            }
+        }
+
+
+        if (!!options.renameFolder) {
+            //Renaming directory with the new version numnber
+            fs.rename(options.src, options.src + '-' + version, function (err) {
+                if (err) {
+                    error('Failed to change folder name', grunt, done);
+                } else {
+                    grunt.log.writeln('Folder name changed to ' + options.src + '-' + version);
+                    if (options.cdn) {
+                        grunt.event.emit('nameChanged', config, options);
+                    } else {
+                        grunt.event.emit('uploadCompleted');
+                    }
+                }
+            });
+        } else {
+            if (options.cdn) {
+                transfer(config);
+            } else {
+                grunt.event.emit('uploadCompleted');
+            }
+        }
+
+
+        //Transfering data to cdn
+        grunt.event.once('nameChanged', function (config, options) {
+            if (replaceFirst) {
+                grunt.task.run('version_replace');
+            }
+            transfer(config, options);
+        });
+
+        //Replacing content in local server
+        grunt.event.once('uploadCompleted', function () {
+            grunt.log.writeln('Folder uploaded');
+            if (!replaceFirst) {
+                grunt.task.run('version_replace');
+            }
+            done(true);
+
+        });
+
+        //Internal grunt task to replace strings in the local filesystem
+        grunt.registerTask('version_replace', function () {
+            if (options.replace) {
+                var replmnts = options.replace.replacements,
+                    len = replmnts.length;
+
+                for (var i = 0; i < len; i++) {
+                    replace({
+                        regex: compile(replmnts[i].from),
+                        replacement: compile(replmnts[i].to),
+                        paths: compile(options.replace.src),
+                        recursive: options.replace.recursive || true,
+                        exclude: options.replace.exclude || '',
+                        silent: false
+                    });
+                }
             }
         });
-        fs.rmdirSync(path);
-    }
-}
+
+    });
+};
