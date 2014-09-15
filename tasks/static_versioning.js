@@ -24,6 +24,7 @@ module.exports = function(grunt) {
             version = grunt.option('version-number') || promptUser(),
             rmfolder = options.removeAfterUpload || false,
             replaceFirst = options.replaceBeforeUpload || false,
+            rename = typeof options.renameFolder === 'undefined' ? true : options.renameFolder,
             config= {
                 username: options.cdn ? options.cdn.username : '',
                 password: options.cdn ? options.cdn.pass : '',
@@ -53,7 +54,7 @@ module.exports = function(grunt) {
             return str;
         };
 
-        if(!!options.renameFolder){
+        if(rename){
             //Renaming directory with the new version numnber
             fs.rename(options.src, options.src + '-' + version, function(err){
                 if(err){
